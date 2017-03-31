@@ -6,47 +6,72 @@
 %include 'io.mac'
 
 .DATA
-num_msg db 'Introduzca un texto: ',0
-msg  	db 'Aqui voy upper', 0Dh, 0Ah, 0
-msg1  	db 'Aqui voy PrintDec', 0Dh, 0Ah, 0
+	msg_num		db 'Introduzca un numero: ', 0
+	msg_error	db 'Dato introducido no es valido: ', 0
+	msg_a		db 'Es un numero', 0
 
 .UDATA
-
-num_data resb 32 ;Espacio para el numero introducido
-
+	num		resb 	16
+	
 .CODE
 	.STARTUP
-	PutStr num_msg ;Imprime el mensaje al usuario
-	GetStr num_data, 32 ;Lee maximo 15 caracteres
-	;PutStr num_data ;Imprime el valor ingresado como char
-	;nwln
+	PutStr msg_num
+	GetStr num, 16
+	mov EBX, num
+
+Verificar:
+	mov AL, [EBX]
 	
-	mov EBX, num_data
+	cmp AL, 0
+	je Done
+	cmp AL, '0'
+	jl Error
+	cmp Al, '9'
+	jg Error
+	call IsNum
+
+Error:
+	PutStr msg_error
+EvE:
 	mov AL, [EBX]
 	cmp AL, 0
-	je Salir
-	;Compara Letras
-	cmp AL, 'A'
-	jl numeros
-	cmp AL, 'Z'
-	jg numeros
+	je Done
+	cmp AL, 'a'
+	jl NoLower
+	cmp AL, 'z'
+	jg NoLower
 	call toUpper
-	;Compara numeros
-numeros:
-	cmp AL, '0'
-	jl Salir
-	cmp AL, '9'
-	jg Salir
-	call ConvDec
+
+NoLower:
+	PutCh AL
+	inc EBX
+	jmp EvE
+
+Done:
+	nwln
 	
-Salir:
 	.EXIT
 
-ConvDec:
-	PutStr msg1
-	ret
-	
-toUpper:
-	PutStr msg
-	ret
+IsNum:
 
+	sub AL, 30h
+	cbw
+	push eax
+	mov eax, edx
+	mov ecx, 10
+	mul ecx
+	mov edx, eax
+	pop eax
+	add edx, eax
+	PutLInt edx
+	nwln
+	
+	;PutStr msg_a
+	inc EBX
+	jmp Verificar
+
+toUpper:
+	add AL, 'A'-'a'
+	PutCh AL
+	inc EBX
+	jmp EvE
