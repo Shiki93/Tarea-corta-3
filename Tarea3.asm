@@ -18,7 +18,7 @@
 	PutStr msg_num
 	GetStr num, 16
 	mov EBX, num
-
+	
 Verificar:
 	mov AL, [EBX]
 	
